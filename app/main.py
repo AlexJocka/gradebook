@@ -39,7 +39,7 @@ app.add_middleware(
     secret_key=settings.secret_key,
     max_age=settings.session_max_age,
     same_site="lax",
-    https_only=settings.environment == "prod",
+    https_only=settings.cookie_secure,
 )
 app.include_router(api_router)
 app.include_router(web.router)

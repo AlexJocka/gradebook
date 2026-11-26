@@ -84,6 +84,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 | `SECRET_KEY` | ключ подписи сессий | случайный при каждом запуске |
 | `APP_ENV` | `dev`, `stage` или `prod` | `dev` |
 | `SESSION_MAX_AGE` | время жизни сессии, с | `1800` |
+| `COOKIE_SECURE` | передавать cookie сессии только по HTTPS | `false` |
 
 ### В Docker
 
