@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Учебные планы{% endblock %}
+{% block content %}
+{% set staff = user.role in ('admin','methodist') %}
+<h1>Учебные планы</h1>
+<section class="card">
+  <form class="inline" method="get">
+    <label>Специальность
+      <select name="specialty_id"><option value="">все</option>
+        {% for sp in specialties %}<option value="{{ sp.id }}" {{ 'selected' if specialty_id == sp.id }}>{{ sp.code }} {{ sp.name }}</option>{% endfor %}
+      </select>
+    </label>
+    <button class="primary">Показать</button>
+  </form>
+</section>
+
+<section class="card">
+  <table>
+    <tr><th>Специальность</th><th>Дисциплина</th><th class="num">Семестр</th><th class="num">Часов</th><th>Отчётность</th>{% if staff %}<th></th>{% endif %}</tr>
+    {% for i in items %}
+    <tr>
+      <td>{{ i.specialty.code }}</td><td>{{ i.discipline.name }}</td>
+      {% if staff %}
+      {% set f = 'cf' ~ i.id %}
+      <td class="num"><input form="{{ f }}" name="semester" type="number" min="1" max="12" value="{{ i.semester }}" style="width:64px"></td>
+      <td class="num"><input form="{{ f }}" name="hours" type="number" min="1" max="1000" value="{{ i.hours }}" style="width:80px"></td>
+      <td><select form="{{ f }}" name="control_form">{% for k, v in CONTROL_FORMS.items() %}<option value="{{ k }}" {{ 'selected' if i.control_form == k }}>{{ v }}</option>{% endfor %}</select></td>
+      <td>
+        <form id="{{ f }}" method="post" action="/curriculum/{{ i.id }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf }}">
+          <input type="hidden" name="specialty_id" value="{{ i.specialty_id }}">
+          <input type="hidden" name="discipline_id" value="{{ i.discipline_id }}">
+          <button class="small">сохранить</button>
+        </form>
+      </td>
+      {% else %}
+      <td class="num">{{ i.semester }}</td><td class="num">{{ i.hours }}</td><td>{{ CONTROL_FORMS[i.control_form] }}</td>
+      {% endif %}
+    </tr>
+    {% else %}
+    <tr><td colspan="6" class="muted">Учебный план пуст</td></tr>
+    {% endfor %}
+  </table>
+</section>
+
+{% if staff %}
+<section class="card">
+  <h2>Добавить дисциплину в учебный план</h2>
+  <form class="inline" method="post" action="/curriculum">
+    <input type="hidden" name="csrf_token" value="{{ csrf }}">
+    <label>Специальность
+      <select name="specialty_id" required>{% for sp in specialties %}<option value="{{ sp.id }}" {{ 'selected' if specialty_id == sp.id }}>{{ sp.code }} {{ sp.name }}</option>{% endfor %}</select>
+    </label>
+    <label>Дисциплина
+      <select name="discipline_id" required>{% for d in disciplines %}<option value="{{ d.id }}">{{ d.name }}</option>{% endfor %}</select>
+    </label>
+    <label>Семестр<input name="semester" type="number" min="1" max="12" value="1" required style="width:70px"></label>
+    <label>Часов<input name="hours" type="number" min="1" max="1000" value="72" required style="width:90px"></label>
+    <label>Отчётность
+      <select name="control_form">{% for k, v in CONTROL_FORMS.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select>
+    </label>
+    <button class="primary">Добавить</button>
+  </form>
+</section>
+{% endif %}
+{% endblock %}

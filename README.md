@@ -56,6 +56,37 @@ Python 3.12 · FastAPI · SQLAlchemy 2 · Alembic · Jinja2 · PostgreSQL 16 · 
 
 ## Сборка и запуск
 
+### Без Docker (прототип)
+
+Нужен Python 3.11 или новее. По умолчанию данные хранятся в SQLite (`gradebook.db`); для PostgreSQL задайте `DATABASE_URL`.
+
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+python -m app.seed --demo        # администратор и демонстрационные данные
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+Пароли пользователей `admin`, `methodist`, `teacher` задаются переменными `ADMIN_PASSWORD` и `DEMO_PASSWORD`; если их нет, `app.seed` сгенерирует пароли и выведет их в консоль.
+
+После запуска:
+
+- веб-интерфейс: http://localhost:8000
+- описание API: http://localhost:8000/docs
+- проверка работоспособности: http://localhost:8000/health
+
+### Переменные окружения
+
+| Переменная | Назначение | По умолчанию |
+|---|---|---|
+| `DATABASE_URL` | строка подключения SQLAlchemy | `sqlite:///./gradebook.db` |
+| `SECRET_KEY` | ключ подписи сессий | случайный при каждом запуске |
+| `APP_ENV` | `dev`, `stage` или `prod` | `dev` |
+| `SESSION_MAX_AGE` | время жизни сессии, с | `1800` |
+
+### В Docker
+
 _Раздел будет заполнен вместе с Dockerfile и docker-compose.yaml._
 
 ## Лицензия

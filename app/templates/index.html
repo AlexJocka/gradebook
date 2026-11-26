@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Главная{% endblock %}
+{% block content %}
+<h1>Справки</h1>
+<div class="grid">
+  {% if counts is not none %}
+  <section class="card">
+    <h2>Ф1. Количество студентов по форме обучения</h2>
+    <form class="inline" method="get" action="/">
+      <label>Форма обучения
+        <select name="study_form">
+          <option value="">все формы</option>
+          {% for k, v in STUDY_FORMS.items() %}<option value="{{ k }}" {{ 'selected' if study_form == k }}>{{ v }}</option>{% endfor %}
+        </select>
+      </label>
+      {% if discipline_id %}<input type="hidden" name="discipline_id" value="{{ discipline_id }}">{% endif %}
+      <button class="primary">Показать</button>
+    </form>
+    <table style="margin-top:14px">
+      <tr><th>Форма обучения</th><th class="num">Студентов</th></tr>
+      {% for k, n in counts.items() %}<tr><td>{{ STUDY_FORMS[k] }}</td><td class="num">{{ n }}</td></tr>{% endfor %}
+      {% if counts|length > 1 %}<tr><th>Всего</th><th class="num">{{ counts.values()|sum }}</th></tr>{% endif %}
+    </table>
+  </section>
+  {% endif %}
+  <section class="card">
+    <h2>Ф2. Часы и форма отчётности по дисциплине</h2>
+    <form class="inline" method="get" action="/">
+      <label>Дисциплина
+        <select name="discipline_id" required>
+          <option value="">выберите</option>
+          {% for d in disciplines %}<option value="{{ d.id }}" {{ 'selected' if discipline_id == d.id }}>{{ d.name }}</option>{% endfor %}
+        </select>
+      </label>
+      {% if study_form %}<input type="hidden" name="study_form" value="{{ study_form }}">{% endif %}
+      <button class="primary">Показать</button>
+    </form>
+    {% if hours %}
+      {% if hours.items %}
+      <table style="margin-top:14px">
+        <tr><th>Специальность</th><th class="num">Семестр</th><th class="num">Часов</th><th>Отчётность</th></tr>
+        {% for r in hours.items %}<tr><td>{{ r.specialty }}</td><td class="num">{{ r.semester }}</td><td class="num">{{ r.hours }}</td><td>{{ CONTROL_FORMS[r.control_form] }}</td></tr>{% endfor %}
+        <tr><th colspan="2">Итого</th><th class="num">{{ hours.total_hours }}</th><th></th></tr>
+      </table>
+      {% else %}
+      <p class="muted">Дисциплина «{{ hours.discipline }}» не входит ни в один учебный план.</p>
+      {% endif %}
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
