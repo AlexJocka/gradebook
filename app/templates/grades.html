@@ -48,7 +48,7 @@
       <td>{{ g.curriculum_item.discipline.name }}</td><td>{{ CONTROL_FORMS[g.curriculum_item.control_form] }}</td>
       <td>
         {% if can_edit and g.student.is_active %}
-        <form class="inline" method="post" action="/grades/{{ g.id }}" style="gap:6px">
+        <form class="inline" method="post" action="/grades/{{ g.id }}" style="gap:6px;flex-wrap:nowrap">
           <input type="hidden" name="csrf_token" value="{{ csrf }}">
           <select name="result">{% for r in RESULTS_BY_CONTROL_FORM[g.curriculum_item.control_form] %}<option value="{{ r }}" {{ 'selected' if g.result == r }}>{{ RESULTS[r] }}</option>{% endfor %}</select>
           <button class="small">изменить</button>
