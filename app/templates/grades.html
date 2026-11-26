@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Журнал успеваемости{% endblock %}
+{% block content %}
+<h1>Журнал успеваемости</h1>
+<section class="card">
+  <form class="inline" method="get">
+    <label>Группа
+      <select name="group_id"><option value="">все</option>
+        {% for g in groups %}<option value="{{ g.id }}" {{ 'selected' if filters.group_id == g.id }}>{{ g.name }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Учебный год<input name="academic_year" value="{{ filters.academic_year }}" placeholder="2026/2027" style="width:110px"></label>
+    <button class="primary">Показать</button>
+  </form>
+</section>
+
+{% if can_edit %}
+<section class="card">
+  <h2>Выставить оценку</h2>
+  <form class="inline" method="post" action="/grades">
+    <input type="hidden" name="csrf_token" value="{{ csrf }}">
+    <label>Учебный год<input name="academic_year" value="{{ default_year }}" required pattern="\d{4}/\d{4}" style="width:110px"></label>
+    <label>Семестр<input name="semester" type="number" min="1" max="12" value="1" required style="width:70px"></label>
+    <label>Студент
+      <select name="student_id" required>{% for s in students %}<option value="{{ s.id }}">{{ s.full_name }} ({{ s.group.name }})</option>{% endfor %}</select>
+    </label>
+    <label>Дисциплина
+      <select name="discipline_id" required>{% for d in disciplines %}<option value="{{ d.id }}">{{ d.name }}</option>{% endfor %}</select>
+    </label>
+    <label>Оценка
+      <select name="result" required>
+        <optgroup label="экзамен">{% for r in RESULTS_BY_CONTROL_FORM['exam'] %}<option value="{{ r }}">{{ RESULTS[r] }}</option>{% endfor %}</optgroup>
+        <optgroup label="зачёт">{% for r in RESULTS_BY_CONTROL_FORM['credit'] %}<option value="{{ r }}">{{ RESULTS[r] }}</option>{% endfor %}</optgroup>
+      </select>
+    </label>
+    <button class="primary">Сохранить</button>
+  </form>
+</section>
+{% endif %}
+
+<section class="card">
+  <table>
+    <tr><th>Уч. год</th><th class="num">Сем.</th><th>Студент</th><th>Группа</th><th>Дисциплина</th><th>Форма</th><th>Оценка</th><th>Дата</th><th>Преподаватель</th></tr>
+    {% for g in grades %}
+    <tr>
+      <td>{{ g.academic_year }}</td><td class="num">{{ g.curriculum_item.semester }}</td>
+      <td>{{ g.student.full_name }}</td><td>{{ g.student.group.name }}</td>
+      <td>{{ g.curriculum_item.discipline.name }}</td><td>{{ CONTROL_FORMS[g.curriculum_item.control_form] }}</td>
+      <td>
+        {% if can_edit and g.student.is_active %}
+        <form class="inline" method="post" action="/grades/{{ g.id }}" style="gap:6px">
+          <input type="hidden" name="csrf_token" value="{{ csrf }}">
+          <select name="result">{% for r in RESULTS_BY_CONTROL_FORM[g.curriculum_item.control_form] %}<option value="{{ r }}" {{ 'selected' if g.result == r }}>{{ RESULTS[r] }}</option>{% endfor %}</select>
+          <button class="small">изменить</button>
+        </form>
+        {% else %}{{ RESULTS[g.result] }}{% endif %}
+      </td>
+      <td>{{ g.graded_on.strftime('%d.%m.%Y') }}</td><td>{{ g.teacher.full_name if g.teacher else '' }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="9" class="muted">Записей нет</td></tr>
+    {% endfor %}
+  </table>
+</section>
+{% endblock %}

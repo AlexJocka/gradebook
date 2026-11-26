@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Пользователи{% endblock %}
+{% block content %}
+<h1>Пользователи</h1>
+<section class="card">
+  <table>
+    <tr><th>Логин</th><th>ФИО</th><th>Роль</th><th>Статус</th><th></th></tr>
+    {% for u in users %}
+    <tr>
+      <td>{{ u.login }}</td><td>{{ u.full_name }}</td><td>{{ ROLES[u.role] }}</td>
+      <td>{% if u.is_blocked %}<span class="tag">заблокирован</span>{% else %}активен{% endif %}</td>
+      <td>{% if u.id != user.id %}
+        <form method="post" action="/users/{{ u.id }}/block">
+          <input type="hidden" name="csrf_token" value="{{ csrf }}">
+          <input type="hidden" name="blocked" value="{{ '0' if u.is_blocked else '1' }}">
+          <button class="small">{{ 'разблокировать' if u.is_blocked else 'заблокировать' }}</button>
+        </form>{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</section>
+<section class="card">
+  <h2>Новый пользователь</h2>
+  <form class="inline" method="post" action="/users">
+    <input type="hidden" name="csrf_token" value="{{ csrf }}">
+    <label>Логин<input name="login" required minlength="3" maxlength="64" pattern="[A-Za-z0-9_.\-]+"></label>
+    <label>Пароль<input name="password" type="password" required minlength="8" autocomplete="new-password"></label>
+    <label>ФИО<input name="full_name" required maxlength="255"></label>
+    <label>Роль
+      <select name="role">{% for k, v in ROLES.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select>
+    </label>
+    <button class="primary">Создать</button>
+  </form>
+</section>
+{% endblock %}

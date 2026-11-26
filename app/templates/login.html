@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Вход{% endblock %}
+{% block content %}
+<div class="card" style="max-width:380px;margin:40px auto">
+  <h1>Вход в систему</h1>
+  <form method="post" action="/login" style="display:grid;gap:12px">
+    <input type="hidden" name="csrf_token" value="{{ csrf }}">
+    <label>Логин<input name="login" required autofocus autocomplete="username"></label>
+    <label>Пароль<input name="password" type="password" required autocomplete="current-password"></label>
+    <button class="primary">Войти</button>
+  </form>
+</div>
+{% endblock %}

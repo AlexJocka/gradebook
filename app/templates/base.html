@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}GradeBook{% endblock %} · GradeBook</title>
+  <style>
+    :root { --fg:#1d2433; --muted:#667085; --line:#d9dee7; --bg:#f6f7f9; --card:#fff; --accent:#2f5bd3; --ok:#e7f6ec; --okfg:#1e6b3a; --err:#fdecec; --errfg:#9b1c1c; }
+    * { box-sizing:border-box; }
+    body { margin:0; font:15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:var(--fg); background:var(--bg); }
+    header { background:#1d2433; color:#fff; }
+    header .wrap { display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
+    header a { color:#cfd6e6; text-decoration:none; padding:14px 0; display:inline-block; }
+    header a:hover, header a.active { color:#fff; }
+    header .brand { font-weight:700; color:#fff; margin-right:12px; }
+    header .who { margin-left:auto; color:#cfd6e6; font-size:14px; }
+    header form { display:inline; }
+    header button { background:none; border:1px solid #56607a; color:#cfd6e6; border-radius:6px; padding:4px 10px; cursor:pointer; }
+    .wrap { max-width:1180px; margin:0 auto; padding:0 20px; }
+    main { padding:24px 0 48px; }
+    h1 { font-size:24px; margin:0 0 16px; }
+    h2 { font-size:18px; margin:0 0 12px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px 20px; margin-bottom:18px; }
+    .grid { display:grid; gap:18px; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); }
+    table { width:100%; border-collapse:collapse; }
+    th, td { text-align:left; padding:7px 8px; border-bottom:1px solid var(--line); vertical-align:middle; }
+    th { font-size:13px; color:var(--muted); font-weight:600; }
+    td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
+    form.inline { display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; }
+    label { display:flex; flex-direction:column; gap:4px; font-size:13px; color:var(--muted); }
+    input, select { font:inherit; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:#fff; color:var(--fg); min-width:0; }
+    button.primary { font:inherit; background:var(--accent); color:#fff; border:0; border-radius:6px; padding:7px 14px; cursor:pointer; }
+    button.small { font:inherit; font-size:13px; padding:3px 8px; border:1px solid var(--line); border-radius:6px; background:#fff; cursor:pointer; }
+    .msg { padding:10px 14px; border-radius:8px; margin-bottom:12px; }
+    .msg.ok { background:var(--ok); color:var(--okfg); }
+    .msg.error { background:var(--err); color:var(--errfg); }
+    .muted { color:var(--muted); }
+    .tag { font-size:12px; padding:1px 7px; border-radius:10px; background:#eef1f6; color:var(--muted); }
+    .big { font-size:30px; font-weight:700; }
+    a { color:var(--accent); }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <span class="brand">GradeBook</span>
+    {% if user %}
+      {% set p = request.url.path %}
+      <a href="/" class="{{ 'active' if p == '/' }}">Главная</a>
+      <a href="/students" class="{{ 'active' if p.startswith('/students') }}">Студенты</a>
+      <a href="/curriculum" class="{{ 'active' if p.startswith('/curriculum') }}">Учебные планы</a>
+      <a href="/grades" class="{{ 'active' if p.startswith('/grades') }}">Журнал</a>
+      <a href="/refs" class="{{ 'active' if p.startswith('/refs') }}">Справочники</a>
+      {% if user.role == 'admin' %}
+        <a href="/users" class="{{ 'active' if p.startswith('/users') }}">Пользователи</a>
+        <a href="/audit" class="{{ 'active' if p.startswith('/audit') }}">Журнал событий</a>
+      {% endif %}
+      <span class="who">{{ user.full_name }} · {{ ROLES[user.role] }}
+        <form method="post" action="/logout"><button>Выйти</button></form>
+      </span>
+    {% endif %}
+  </div>
+</header>
+<main class="wrap">
+  {% for kind, text in messages %}<div class="msg {{ kind }}">{{ text }}</div>{% endfor %}
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>

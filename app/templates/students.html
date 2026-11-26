@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Студенты{% endblock %}
+{% block content %}
+<h1>Студенты</h1>
+<section class="card">
+  <form class="inline" method="get">
+    <label>Группа
+      <select name="group_id"><option value="">все</option>
+        {% for g in groups %}<option value="{{ g.id }}" {{ 'selected' if filters.group_id == g.id }}>{{ g.name }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Форма обучения
+      <select name="study_form"><option value="">все</option>
+        {% for k, v in STUDY_FORMS.items() %}<option value="{{ k }}" {{ 'selected' if filters.study_form == k }}>{{ v }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Фамилия<input name="q" value="{{ filters.q }}" placeholder="начало фамилии"></label>
+    <button class="primary">Найти</button>
+  </form>
+</section>
+
+<section class="card">
+  <table>
+    <tr><th>ФИО</th><th>Группа</th><th class="num">Год поступления</th><th>Форма</th><th>Статус</th>{% if user.role in ('admin','methodist') %}<th></th>{% endif %}</tr>
+    {% for s in students %}
+    <tr>
+      <td>{{ s.full_name }}</td><td>{{ s.group.name }}</td><td class="num">{{ s.admission_year }}</td>
+      <td>{{ STUDY_FORMS[s.study_form] }}</td>
+      <td>{% if s.is_active %}обучается{% else %}<span class="tag">отчислен</span>{% endif %}</td>
+      {% if user.role in ('admin','methodist') %}<td><a href="/students/{{ s.id }}">изменить</a></td>{% endif %}
+    </tr>
+    {% else %}
+    <tr><td colspan="6" class="muted">Студенты не найдены</td></tr>
+    {% endfor %}
+  </table>
+</section>
+
+{% if user.role in ('admin','methodist') %}
+<section class="card">
+  <h2>Добавить студента</h2>
+  <form class="inline" method="post" action="/students">
+    <input type="hidden" name="csrf_token" value="{{ csrf }}">
+    <label>Фамилия<input name="last_name" required maxlength="100"></label>
+    <label>Имя<input name="first_name" required maxlength="100"></label>
+    <label>Отчество<input name="middle_name" maxlength="100"></label>
+    <label>Год поступления<input name="admission_year" type="number" min="1990" max="{{ this_year }}" value="{{ this_year }}" required style="width:110px"></label>
+    <label>Форма обучения
+      <select name="study_form" required>{% for k, v in STUDY_FORMS.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select>
+    </label>
+    <label>Группа
+      <select name="group_id" required>{% for g in groups %}<option value="{{ g.id }}">{{ g.name }}</option>{% endfor %}</select>
+    </label>
+    <button class="primary">Добавить</button>
+  </form>
+</section>
+{% endif %}
+{% endblock %}
