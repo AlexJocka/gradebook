@@ -15,6 +15,8 @@ class Settings:
         self.lockout_minutes: int = int(os.getenv("LOCKOUT_MINUTES", "15"))
         self.environment: str = os.getenv("APP_ENV", "dev")
         # Передавать cookie сессии только по HTTPS (включается, когда перед приложением есть TLS).
+        # Каталог для файла журнала; пусто - только вывод в stdout.
+        self.log_dir: str = os.getenv("LOG_DIR", "")
         self.cookie_secure: bool = os.getenv("COOKIE_SECURE", "false").lower() in ("1", "true", "yes")
 
 

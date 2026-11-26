@@ -2,6 +2,8 @@
 
 import logging
 from contextlib import asynccontextmanager
+from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -16,12 +18,30 @@ from app.db import SessionLocal, engine
 from app.errors import GradebookError
 from app.models import Base
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+LOG_FORMAT = "%(asctime)s %(levelname)s %(name)s: %(message)s"
+logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 log = logging.getLogger("gradebook")
+
+
+def _setup_file_logging() -> None:
+    """Дублирует журнал приложения и uvicorn в файл LOG_DIR/gradebook.log (том контейнера)."""
+    if not settings.log_dir:
+        return
+    path = Path(settings.log_dir)
+    try:
+        path.mkdir(parents=True, exist_ok=True)
+        handler = RotatingFileHandler(path / "gradebook.log", maxBytes=5_000_000, backupCount=5, encoding="utf-8")
+    except OSError as exc:
+        log.warning("file logging disabled: %s", exc)
+        return
+    handler.setFormatter(logging.Formatter(LOG_FORMAT))
+    for name in ("", "uvicorn.access", "uvicorn.error"):
+        logging.getLogger(name).addHandler(handler)
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    _setup_file_logging()
     # До внедрения миграций (ЛР8) схема создаётся при старте.
     Base.metadata.create_all(engine)
     log.info("GradeBook %s started, env=%s", __version__, settings.environment)
