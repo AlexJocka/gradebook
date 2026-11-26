@@ -14,6 +14,8 @@ class Settings:
         self.max_login_attempts: int = int(os.getenv("MAX_LOGIN_ATTEMPTS", "5"))
         self.lockout_minutes: int = int(os.getenv("LOCKOUT_MINUTES", "15"))
         self.environment: str = os.getenv("APP_ENV", "dev")
+        # Передавать cookie сессии только по HTTPS (включается, когда перед приложением есть TLS).
+        self.cookie_secure: bool = os.getenv("COOKIE_SECURE", "false").lower() in ("1", "true", "yes")
 
 
 settings = Settings()

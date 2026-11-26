@@ -44,7 +44,7 @@
     {% for g in grades %}
     <tr>
       <td>{{ g.academic_year }}</td><td class="num">{{ g.curriculum_item.semester }}</td>
-      <td>{{ g.student.full_name }}</td><td>{{ g.student.group.name }}</td>
+      <td>{{ g.student.full_name }}</td><td class="nowrap">{{ g.student.group.name }}</td>
       <td>{{ g.curriculum_item.discipline.name }}</td><td>{{ CONTROL_FORMS[g.curriculum_item.control_form] }}</td>
       <td>
         {% if can_edit and g.student.is_active %}
