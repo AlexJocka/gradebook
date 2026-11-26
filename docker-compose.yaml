@@ -1,0 +1,48 @@
+# Приложение GradeBook и СУБД PostgreSQL.
+# Пароли задаются в файле .env (образец: .env.example), он не хранится в репозитории.
+name: gradebook
+
+services:
+  gradebook_db:
+    container_name: gradebook_db
+    hostname: gradebook_db
+    image: postgres:16
+    environment:
+      POSTGRES_DB: gradebook
+      POSTGRES_USER: gradebook
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?задайте POSTGRES_PASSWORD в .env}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./volumes/postgres:/var/lib/postgresql/data   # файлы БД
+    ports:
+      - "127.0.0.1:54321:5432"   # доступ к БД только с самого стенда
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gradebook -d gradebook"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  gradebook_app:
+    container_name: gradebook_app
+    hostname: gradebook_app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gradebook:${APP_TAG:-local}
+    environment:
+      DATABASE_URL: postgresql+psycopg://gradebook:${POSTGRES_PASSWORD}@gradebook_db:5432/gradebook
+      SECRET_KEY: ${SECRET_KEY:?задайте SECRET_KEY в .env}
+      APP_ENV: ${APP_ENV:-dev}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-}
+      SEED_DEMO: ${SEED_DEMO:-false}
+      LOG_DIR: /app/logs
+    volumes:
+      - ./volumes/logs:/app/logs   # журнал приложения
+    ports:
+      - "8000:8000"
+    depends_on:
+      gradebook_db:
+        condition: service_healthy
+    restart: unless-stopped

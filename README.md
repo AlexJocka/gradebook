@@ -85,10 +85,35 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 | `APP_ENV` | `dev`, `stage` или `prod` | `dev` |
 | `SESSION_MAX_AGE` | время жизни сессии, с | `1800` |
 | `COOKIE_SECURE` | передавать cookie сессии только по HTTPS | `false` |
+| `LOG_DIR` | каталог для файла журнала `gradebook.log` | не задан (только stdout) |
 
 ### В Docker
 
-_Раздел будет заполнен вместе с Dockerfile и docker-compose.yaml._
+Нужны Docker Engine и плагин Docker Compose.
+
+Только приложение (данные в SQLite внутри контейнера):
+
+```bash
+docker build -t gradebook:local .
+docker run -d --name gradebook -p 8000:8000 -e SECRET_KEY=<ключ> -e SEED_DEMO=true gradebook:local
+```
+
+Приложение и PostgreSQL 16:
+
+```bash
+cp .env.example .env              # задайте POSTGRES_PASSWORD, SECRET_KEY и пароли пользователей
+mkdir -p volumes/logs volumes/postgres
+docker compose up -d --build      # сборка и запуск в фоне
+docker compose logs -f            # вывод stdout и stderr
+docker compose down               # остановка (данные остаются в volumes/)
+```
+
+| Каталог на хосте | В контейнере | Что хранится |
+|---|---|---|
+| `volumes/postgres` | `/var/lib/postgresql/data` | файлы БД PostgreSQL |
+| `volumes/logs` | `/app/logs` | журнал приложения `gradebook.log` |
+
+СУБД доступна только с самого стенда: `127.0.0.1:54321`.
 
 ## Лицензия
 
