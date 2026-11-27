@@ -65,6 +65,16 @@ class StudentOut(ORM, StudentIn):
     full_name: str
 
 
+class StudentSummary(BaseModel):
+    student_id: int
+    full_name: str
+    group: str
+    average: float | None = Field(description="Средний балл по экзаменам, None если экзаменов нет")
+    exams: int
+    credits_passed: int
+    debts: int = Field(description="Неудовлетворительные оценки и незачёты")
+
+
 # --- учебный план ---
 class CurriculumIn(BaseModel):
     specialty_id: int

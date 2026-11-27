@@ -21,11 +21,14 @@
 
 <section class="card">
   <table>
-    <tr><th>ФИО</th><th>Группа</th><th class="num">Год поступления</th><th>Форма</th><th>Статус</th>{% if user.role in ('admin','methodist') %}<th></th>{% endif %}</tr>
+    <tr><th>ФИО</th><th>Группа</th><th class="num">Год поступления</th><th>Форма</th><th class="num">Средний балл</th><th class="num">Задолженности</th><th>Статус</th>{% if user.role in ('admin','methodist') %}<th></th>{% endif %}</tr>
     {% for s in students %}
+    {% set pf = perf.get(s.id, {}) %}
     <tr>
-      <td>{{ s.full_name }}</td><td>{{ s.group.name }}</td><td class="num">{{ s.admission_year }}</td>
+      <td>{{ s.full_name }}</td><td class="nowrap">{{ s.group.name }}</td><td class="num">{{ s.admission_year }}</td>
       <td>{{ STUDY_FORMS[s.study_form] }}</td>
+      <td class="num">{{ '%.2f'|format(pf.get('average')) if pf.get('average') is not none else '–' }}</td>
+      <td class="num">{% if pf.get('debts') %}<span class="tag" style="background:var(--err);color:var(--errfg)">{{ pf.debts }}</span>{% else %}0{% endif %}</td>
       <td>{% if s.is_active %}обучается{% else %}<span class="tag">отчислен</span>{% endif %}</td>
       {% if user.role in ('admin','methodist') %}<td><a href="/students/{{ s.id }}">изменить</a></td>{% endif %}
     </tr>

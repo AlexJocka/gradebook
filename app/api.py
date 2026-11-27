@@ -101,6 +101,15 @@ def list_students(
     return db.scalars(query).all()
 
 
+@router.get(
+    "/students/{student_id}/summary",
+    response_model=schemas.StudentSummary,
+    summary="Средний балл и задолженности студента",
+)
+def student_summary(student_id: int, db: Session = Depends(get_db), _: AppUser = Depends(ANY)):
+    return services.student_summary(db, student_id)
+
+
 @router.post("/students", response_model=schemas.StudentOut, status_code=201)
 def add_student(data: schemas.StudentIn, db: Session = Depends(get_db), user: AppUser = Depends(STAFF)):
     return services.create_student(db, user, data)
