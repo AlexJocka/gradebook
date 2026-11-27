@@ -251,6 +251,44 @@ def update_grade(db: Session, user: AppUser, grade_id: int, data: schemas.GradeU
     return obj
 
 
+# ---------- Средний балл и задолженности ----------
+EXAM_MARKS = ("5", "4", "3", "2")
+DEBT_RESULTS = ("2", "fail")
+
+
+def performance(db: Session, student_ids: list[int] | None = None) -> dict[int, dict]:
+    """Средний балл по экзаменам, число экзаменов, зачётов и задолженностей для каждого студента."""
+    query = select(Grade.student_id, Grade.result)
+    if student_ids is not None:
+        if not student_ids:
+            return {}
+        query = query.where(Grade.student_id.in_(student_ids))
+    stats: dict[int, dict] = {}
+    for student_id, result in db.execute(query):
+        s = stats.setdefault(student_id, {"marks": [], "credits_passed": 0, "debts": 0})
+        if result in EXAM_MARKS:
+            s["marks"].append(int(result))
+        elif result == "pass":
+            s["credits_passed"] += 1
+        if result in DEBT_RESULTS:
+            s["debts"] += 1
+    return {
+        sid: {
+            "average": round(sum(s["marks"]) / len(s["marks"]), 2) if s["marks"] else None,
+            "exams": len(s["marks"]),
+            "credits_passed": s["credits_passed"],
+            "debts": s["debts"],
+        }
+        for sid, s in stats.items()
+    }
+
+
+def student_summary(db: Session, student_id: int) -> schemas.StudentSummary:
+    student = get_or_404(db, Student, student_id, "Студент")
+    data = performance(db, [student_id]).get(student_id, {"average": None, "exams": 0, "credits_passed": 0, "debts": 0})
+    return schemas.StudentSummary(student_id=student.id, full_name=student.full_name, group=student.group.name, **data)
+
+
 # ---------- Ф5. Пользователи ----------
 def create_user(db: Session, user: AppUser | None, data: schemas.UserIn) -> AppUser:
     if db.scalar(select(AppUser).where(AppUser.login == data.login)):
